@@ -116,7 +116,7 @@ public class GenericType<T> {
      */
     protected GenericType() {
         // Get the type parameter of GenericType<T> (aka the T value)
-        type = getTypeArgument(getClass(), GenericType.class);
+        type    = getTypeArgument(getClass(), GenericType.class);
         rawType = getClass(type);
     }
 
@@ -134,7 +134,7 @@ public class GenericType<T> {
             throw new IllegalArgumentException("Type must not be null");
         }
 
-        type = genericType;
+        type    = genericType;
         rawType = getClass(type);
     }
 

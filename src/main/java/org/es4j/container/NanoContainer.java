@@ -1,25 +1,37 @@
 package org.es4j.container;
 
+import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import org.es4j.exceptions.ArgumentException;
-import org.es4j.exceptions.ArgumentNullException;
-import org.es4j.logging.api.ILog;
-import org.es4j.logging.api.LogFactory;
+import org.es4j.util.logging.ILog;
+import org.es4j.util.logging.LogFactory;
 
 
 public class NanoContainer {
     private static final ILog logger = LogFactory.buildLogger(NanoContainer.class);
-    private final Map<Class, ContainerRegistration> registrations = new HashMap<Class, ContainerRegistration>();
+    private final Map<GenericType, ContainerRegistration> registrations = new HashMap<GenericType, ContainerRegistration>();
 
-    public <TService> ContainerRegistration register(Class clazz, Resolver resolver) {
-        logger.debug(Messages.registeringWireupCallback(), clazz.getName());
+    public <TService> ContainerRegistration register(final TService instance) {
+        return this.register(new Resolver<TService>() {
+
+            @Override
+            public TService resolve(NanoContainer container) {
+                return instance;
+            }
+        });
+    }
+    
+    public <TService> ContainerRegistration register(final Resolver<TService> resolver) {
+        GenericType gtype = new GenericType();
+        Type type = gtype.getType().getClass().getTypeParameters()[0];
+        logger.debug(Messages.registeringWireupCallback(), type.getClass().getName());
         ContainerRegistration registration = new ContainerRegistration(resolver);
-        this.registrations.put(clazz, registration);
+        //this.registrations.put(type, registration);
         return registration;
     }
-
-    public <TService> ContainerRegistration register(/*Class clazz,*/ TService instance) {
+/*
+    public <TService> ContainerRegistration register(TService instance) {
         if (instance == null)
             throw new ArgumentNullException("instance", Messages.instanceCannotBeNull());
         
@@ -28,21 +40,34 @@ public class NanoContainer {
 
         logger.debug(Messages.registeringServiceInstance(), instance.getClass());
         ContainerRegistration registration = new ContainerRegistration(instance);
-        this.registrations.put(instance.getClass(), registration);
+        this.registrations.put(new GenericType(instance.getClass()), registration);
         return registration;
     }
-
+*/
     public <TService> TService resolve(Class<TService> clazz) {
-        logger.debug(Messages.resolvingService(), clazz.getClass().getName());
+        logger.debug(Messages.resolvingService(), clazz.getName());
 
-        ContainerRegistration registration = this.registrations.containsKey(clazz)? this.registrations.get(clazz) 
+        ContainerRegistration registration = this.registrations.containsKey(clazz)? this.registrations.get(clazz)
                                                                                   : null;       
         if (registrations != null)
             return (TService)registration.resolve(this);
 
         logger.debug(Messages.unableToResolve(), clazz.getClass().getName());
         return null; // default(TService);
-    }    
+    }
+    
+    public <TService> List<TService> resolveAll(Class<TService> clazz) {
+        logger.debug(Messages.resolvingService(), clazz.getName());
+
+        ContainerRegistration registration = this.registrations.containsKey(clazz)? this.registrations.get(clazz)
+                                                                                  : null;       
+        if (registrations != null) {
+            return (List<TService>)registration.resolve(this);
+        }
+
+        logger.debug(Messages.unableToResolve(), clazz.getClass().getName());
+        return null; // default(TService);
+    }
 }
 
 

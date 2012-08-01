@@ -1,8 +1,8 @@
 package org.es4j.container;
 
 import java.lang.reflect.Type;
-import org.es4j.logging.api.ILog;
-import org.es4j.logging.api.LogFactory;
+import org.es4j.util.logging.ILog;
+import org.es4j.util.logging.LogFactory;
 
 
 public class ContainerRegistration<TService> {
